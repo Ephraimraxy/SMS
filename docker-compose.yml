@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: sms_app
+    restart: unless-stopped
+    working_dir: /var/www/html
+    volumes:
+      - ./storage:/var/www/html/storage
+      - ./bootstrap/cache:/var/www/html/bootstrap/cache
+    ports:
+      - "8000:80"
+    environment:
+      - APP_ENV=${APP_ENV:-production}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - DB_HOST=db
+      - DB_DATABASE=${DB_DATABASE:-sms}
+      - DB_USERNAME=${DB_USERNAME:-root}
+      - DB_PASSWORD=${DB_PASSWORD:-}
+    depends_on:
+      - db
+    networks:
+      - sms_network
+
+  db:
+    image: mysql:8.0
+    container_name: sms_db
+    restart: unless-stopped
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE:-sms}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD:-root}
+      - MYSQL_USER=${DB_USERNAME:-root}
+      - MYSQL_PASSWORD=${DB_PASSWORD:-root}
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - sms_network
+
+volumes:
+  db_data:
+
+networks:
+  sms_network:
+    driver: bridge
+
+

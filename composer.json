@@ -5,24 +5,22 @@
     "license": "MIT",
     "type": "project",
     "require": {
-        "php": "^7.2||^8.0",
-        "barryvdh/laravel-dompdf": "^0.8.3",
-        "fakerphp/faker": "^1.14",
-        "fideloper/proxy": "^4.4",
-        "fruitcake/laravel-cors": "^2.0",
-        "guzzlehttp/guzzle": "^7.0.1",
-        "hashids/hashids": "^4.1.0",
-        "laravel/framework": "^8.40",
-        "laravel/tinker": "^2.5",
-        "laravel/ui": "^3.0",
-        "stancl/tenancy": "^3.4"
+        "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^2.0",
+        "fakerphp/faker": "^1.24",
+        "guzzlehttp/guzzle": "^7.9",
+        "hashids/hashids": "^5.1",
+        "laravel/framework": "^11.0",
+        "laravel/tinker": "^2.10",
+        "laravel/ui": "^4.6",
+        "stancl/tenancy": "^4.0"
     },
     "require-dev": {
-        "barryvdh/laravel-ide-helper": "^2.8",
-        "facade/ignition": "^2.5",
-        "mockery/mockery": "^1.4.2",
-        "nunomaduro/collision": "^5.0",
-        "phpunit/phpunit": "^9.3.3"
+        "barryvdh/laravel-ide-helper": "^2.13",
+        "laravel/pint": "^1.13",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^11.0"
     },
     "autoload": {
         "psr-4": {
@@ -64,5 +62,7 @@
             "@php artisan ide-helper:generate",
             "@php artisan ide-helper:meta"
         ]
-    }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
 }

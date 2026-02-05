@@ -1,0 +1,53 @@
+FROM php:8.3-apache
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    zip \
+    unzip \
+    nodejs \
+    npm \
+    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Install Composer
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
+# Set working directory
+WORKDIR /var/www/html
+
+# Copy application files
+COPY . /var/www/html
+
+# Install PHP dependencies
+RUN composer install --no-dev --optimize-autoloader --no-interaction
+
+# Install Node dependencies and build assets
+RUN npm ci --legacy-peer-deps && npm run production
+
+# Set permissions
+RUN chown -R www-data:www-data /var/www/html \
+    && chmod -R 755 /var/www/html/storage \
+    && chmod -R 755 /var/www/html/bootstrap/cache
+
+# Configure Apache
+RUN a2enmod rewrite
+COPY .docker/apache-config.conf /etc/apache2/sites-available/000-default.conf
+
+# Generate key if not exists
+RUN php artisan key:generate --force || true
+
+# Cache configuration
+RUN php artisan config:cache \
+    && php artisan route:cache \
+    && php artisan view:cache
+
+EXPOSE 80
+
+CMD ["apache2-foreground"]
+
+

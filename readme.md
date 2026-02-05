@@ -36,13 +36,22 @@ Administrators (Super Admin & Admin)
 
 **Requirements** 
 
-Check Laravel 8 Requirements https://laravel.com/docs/8.x
+- PHP 8.2 or higher
+- Composer 2.x
+- Node.js 18+ (20+ recommended)
+- NPM 9+ (10+ recommended)
+- MySQL 8.0+ or MariaDB 10.3+
+- Check Laravel 11 Requirements https://laravel.com/docs/11.x
 
 **Installation**
-- Install dependencies (composer install)
-- Set Database Credentials & App Settings in dotenv file (.env)
-- Migrate Database (php artisan migrate)
-- Database seed (php artisan db:seed)
+- Install PHP dependencies: `composer install`
+- Install Node.js dependencies: `npm install`
+- Copy `.env.example` to `.env`: `cp .env.example .env`
+- Generate application key: `php artisan key:generate`
+- Set Database Credentials & App Settings in `.env` file
+- Migrate Database: `php artisan migrate`
+- Database seed: `php artisan db:seed`
+- Build assets: `npm run production`
 
 **Login Credentials**
 After seeding. Login details as follows:
