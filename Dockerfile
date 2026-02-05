@@ -24,7 +24,9 @@ WORKDIR /var/www/html
 COPY . /var/www/html
 
 # Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --no-interaction
+# Use `composer update` because composer.lock is out of sync with composer.json
+# and we intentionally upgraded to newer package versions.
+RUN composer update --no-dev --optimize-autoloader --no-interaction
 
 # Install Node dependencies and build assets
 RUN npm ci --legacy-peer-deps && npm run production
