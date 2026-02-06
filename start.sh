@@ -34,10 +34,24 @@ fi
 php artisan cache:clear || true
 
 # Configure Apache port if PORT env var is set
-if [ ! -z "$PORT" ]; then
-    echo "🔌  Configuring Apache to listen on port $PORT..."
-    sed -i "s/Listen 80/Listen $PORT/g" /etc/apache2/ports.conf
-    sed -i "s/<VirtualHost \*:80>/<VirtualHost *:$PORT>/g" /etc/apache2/sites-available/000-default.conf
+if [ -n "${PORT:-}" ]; then
+    echo "🔌  Configuring Apache to listen on PORT=$PORT (and also 80 for compatibility)..."
+
+    # Railway (and other platforms) sometimes route traffic to the Dockerfile's exposed port (often 80)
+    # even while setting $PORT to a different value. Listening on both avoids 503 healthcheck failures.
+    if ! grep -qE '^[[:space:]]*Listen[[:space:]]+80[[:space:]]*$' /etc/apache2/ports.conf; then
+        echo "Listen 80" >> /etc/apache2/ports.conf
+    fi
+
+    if [ "$PORT" != "80" ]; then
+        if ! grep -qE "^[[:space:]]*Listen[[:space:]]+$PORT[[:space:]]*$" /etc/apache2/ports.conf; then
+            echo "Listen $PORT" >> /etc/apache2/ports.conf
+        fi
+
+        # Make the default vhost respond on both ports.
+        # Replace any existing <VirtualHost ...> line with one that includes 80 and $PORT.
+        sed -i -E "s#<VirtualHost[^>]*>#<VirtualHost *:80 *:$PORT>#g" /etc/apache2/sites-available/000-default.conf
+    fi
 else
     echo "⚠️  PORT variable not set, defaulting to 80"
 fi

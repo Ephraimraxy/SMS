@@ -50,13 +50,10 @@ RUN chown -R www-data:www-data /var/www/html \
 RUN a2enmod rewrite
 COPY .docker/apache-config.conf /etc/apache2/sites-available/000-default.conf
 
-# Generate key if not exists
-RUN php artisan key:generate --force || true
-
 # Note: config/route/view caching happens at runtime via start.sh
 # because environment variables are not available during build
 
-EXPOSE 80
+EXPOSE 80 8080
 
 CMD ["./start.sh"]
 
