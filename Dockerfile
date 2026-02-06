@@ -29,7 +29,7 @@ COPY . /var/www/html
 RUN composer update --no-dev --optimize-autoloader --no-interaction
 
 # Install Node dependencies and build assets
-RUN npm ci --legacy-peer-deps && npm run production
+RUN npm install --legacy-peer-deps && npm run production
 
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
@@ -43,10 +43,8 @@ COPY .docker/apache-config.conf /etc/apache2/sites-available/000-default.conf
 # Generate key if not exists
 RUN php artisan key:generate --force || true
 
-# Cache configuration
-RUN php artisan config:cache \
-    && php artisan route:cache \
-    && php artisan view:cache
+# Note: config/route/view caching happens at runtime via start.sh
+# because environment variables are not available during build
 
 EXPOSE 80
 
