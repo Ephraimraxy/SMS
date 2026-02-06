@@ -56,7 +56,16 @@ else
     echo "⚠️  PORT variable not set, defaulting to 80"
 fi
 
-echo "✅ Startup complete! Starting web server..."
+echo "✅ Startup complete! Preparing web server..."
 
-# Start the Apache server (standard PHP image command)
+# Ensure only one Apache MPM is enabled to avoid:
+#   AH00534: apache2: Configuration error: More than one MPM loaded.
+if command -v a2dismod >/dev/null 2>&1; then
+    echo "🔧 Ensuring a single Apache MPM (prefork) is enabled..."
+    # Disable alternative MPMs if present (ignore errors if they don't exist)
+    a2dismod mpm_event mpm_worker mpm_prefork 2>/dev/null || true
+    a2enmod mpm_prefork 2>/dev/null || true
+fi
+
+echo "🚀 Starting Apache (apache2-foreground)..."
 exec apache2-foreground
