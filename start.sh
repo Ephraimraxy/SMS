@@ -4,14 +4,19 @@ set -e
 echo "🚀 Starting Laravel School Management System..."
 
 # Generate key if not set (fallback)
-if [ -z "$APP_KEY" ]; then
-    echo "⚠️ APP_KEY not set, generating one..."
-    php artisan key:generate --force
+if [ ! -f ".env" ]; then
+    echo "⚠️ .env not found, copying from .env.example..."
+    cp .env.example .env || true
 fi
 
-# Run database migrations
+if [ -z "$APP_KEY" ]; then
+    echo "⚠️ APP_KEY not set, generating one..."
+    php artisan key:generate --force || true
+fi
+
+# Run database migrations (don't fail if DB isn't ready)
 echo "📦 Running database migrations..."
-php artisan migrate --force
+php artisan migrate --force || echo "⚠️ Migrations failed, skipping..."
 
 # Cache configuration (now that env vars are available)
 echo "⚙️ Caching configuration..."
