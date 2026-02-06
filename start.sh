@@ -19,10 +19,10 @@ echo "📦 Running database migrations..."
 php artisan migrate --force || echo "⚠️ Migrations failed, but starting server anyway..."
 
 # Cache configuration (now that env vars are available)
-echo "⚙️ Caching configuration..."
-php artisan config:cache || echo "⚠️ Config cache failed"
-php artisan route:cache || echo "⚠️ Route cache failed"
-php artisan view:cache || echo "⚠️ View cache failed"
+# DISABLED: Caching can cause issues if env vars aren't perfect. 
+# Using dynamic config is safer for debugging.
+echo "🧹 Clearing caches..."
+php artisan optimize:clear
 
 # Fallback for APP_KEY if it's still empty (prevent boot loop)
 if [ -z "$APP_KEY" ] && [ ! -f .env ]; then
