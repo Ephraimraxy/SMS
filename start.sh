@@ -16,13 +16,19 @@ fi
 
 # Run database migrations (don't fail if DB isn't ready)
 echo "📦 Running database migrations..."
-php artisan migrate --force || echo "⚠️ Migrations failed, skipping..."
+php artisan migrate --force || echo "⚠️ Migrations failed, but starting server anyway..."
 
 # Cache configuration (now that env vars are available)
 echo "⚙️ Caching configuration..."
-php artisan config:cache
-php artisan route:cache
-php artisan view:cache
+php artisan config:cache || echo "⚠️ Config cache failed"
+php artisan route:cache || echo "⚠️ Route cache failed"
+php artisan view:cache || echo "⚠️ View cache failed"
+
+# Fallback for APP_KEY if it's still empty (prevent boot loop)
+if [ -z "$APP_KEY" ] && [ ! -f .env ]; then
+   echo "⚠️ No APP_KEY and no .env! Generating dummy key so Apache starts..."
+   echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+fi
 
 # Clear any stale caches
 php artisan cache:clear || true
