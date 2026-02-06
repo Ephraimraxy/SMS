@@ -30,8 +30,18 @@ if [ -z "$APP_KEY" ] && [ ! -f .env ]; then
    echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
 fi
 
+# Force logs to stderr for Docker visibility
+if ! grep -q "LOG_CHANNEL=stderr" .env; then
+    echo "LOG_CHANNEL=stderr" >> .env
+fi
+
 # Clear any stale caches
-php artisan cache:clear || true
+echo "🧹 Clearing caches..."
+php artisan optimize:clear || echo "⚠️ Failed to clear cache (check permissions?)"
+
+# Fix permissions (since we ran artisan as root, we must give back to www-data)
+echo "🔒 Fixing permissions..."
+chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Configure Apache port if PORT env var is set
 if [ -n "${PORT:-}" ]; then
