@@ -42,7 +42,8 @@ RUN npm install --legacy-peer-deps && npm run production
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 755 /var/www/html/bootstrap/cache \
+    && chmod +x /var/www/html/start.sh
 
 # Configure Apache
 RUN a2enmod rewrite
@@ -56,6 +57,6 @@ RUN php artisan key:generate --force || true
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD ["./start.sh"]
 
 

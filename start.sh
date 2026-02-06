@@ -22,7 +22,13 @@ php artisan view:cache
 # Clear any stale caches
 php artisan cache:clear || true
 
+# Configure Apache port if PORT env var is set
+if [ ! -z "$PORT" ]; then
+    echo "🔌  Configuring Apache to listen on port $PORT..."
+    sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf
+fi
+
 echo "✅ Startup complete! Starting web server..."
 
-# Start the Apache server
-exec vendor/bin/heroku-php-apache2 public/
+# Start the Apache server (standard PHP image command)
+exec apache2-foreground
