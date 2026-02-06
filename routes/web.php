@@ -1,5 +1,9 @@
 <?php
 
+Route::get('/health', function () {
+    return response('OK', 200);
+});
+
 Auth::routes();
 
 //Route::get('/test', 'TestController@index')->name('test');
