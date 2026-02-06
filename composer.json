@@ -1,7 +1,10 @@
 {
     "name": "laravel/laravel",
     "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "type": "project",
     "require": {
@@ -9,14 +12,14 @@
         "barryvdh/laravel-dompdf": "^2.0",
         "fakerphp/faker": "^1.24",
         "guzzlehttp/guzzle": "^7.9",
-        "hashids/hashids": "^5.1",
+        "hashids/hashids": "^5.0",
         "laravel/framework": "^11.0",
         "laravel/tinker": "^2.10",
         "laravel/ui": "^4.6",
-        "stancl/tenancy": "^4.0"
+        "stancl/tenancy": "^3.8"
     },
     "require-dev": {
-        "barryvdh/laravel-ide-helper": "^2.13",
+        "barryvdh/laravel-ide-helper": "^3.0",
         "laravel/pint": "^1.13",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.0",
@@ -44,8 +47,6 @@
         "sort-packages": true,
         "optimize-autoloader": true
     },
-    "minimum-stability": "dev",
-    "prefer-stable": true,
     "scripts": {
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
@@ -58,9 +59,7 @@
             "@php artisan key:generate --ansi"
         ],
         "post-update-cmd": [
-            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
-            "@php artisan ide-helper:generate",
-            "@php artisan ide-helper:meta"
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate"
         ]
     },
     "minimum-stability": "stable",
