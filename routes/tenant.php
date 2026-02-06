@@ -35,9 +35,10 @@ Route::middleware([
     // });
     Route::group(['middleware' => 'auth'], function () {
 
-        Route::get('/', 'HomeController@dashboard')->name('home');
-        Route::get('/home', 'HomeController@dashboard')->name('home');
-        Route::get('/dashboard', 'HomeController@dashboard')->name('dashboard');
+        // Tenant home/dashboard routes - use tenant-specific names to avoid clashes
+        Route::get('/', 'HomeController@dashboard')->name('tenant.home');
+        Route::get('/home', 'HomeController@dashboard')->name('tenant.home.redirect');
+        Route::get('/dashboard', 'HomeController@dashboard')->name('tenant.dashboard');
 
         Route::group(['prefix' => 'my_account'], function() {
             Route::get('/', 'MyAccountController@edit_profile')->name('my_account');
