@@ -21,6 +21,7 @@ return [
         '127.0.0.1',
         'localhost',
         'healthcheck.railway.app', // Added for Railway health checks
+        'web-production-4f1ae.up.railway.app', // Railway production domain
     ], array_filter([
         env('RAILWAY_STATIC_URL'),
         env('RAILWAY_PUBLIC_DOMAIN'),
