@@ -120,6 +120,10 @@ class TenancyServiceProvider extends ServiceProvider
 
     protected function mapRoutes()
     {
+        if (in_array(request()->getHost(), config('tenancy.central_domains'))) {
+            return;
+        }
+
         if (file_exists(base_path('routes/tenant.php'))) {
             Route::namespace(static::$controllerNamespace)
                 ->group(base_path('routes/tenant.php'));
