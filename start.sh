@@ -18,64 +18,32 @@ fi
 echo "📦 Running database migrations..."
 php artisan migrate --force || echo "⚠️ Migrations failed, but starting server anyway..."
 
-# Cache configuration (now that env vars are available)
-# DISABLED: Caching can cause issues if env vars aren't perfect. 
-# Using dynamic config is safer for debugging.
-echo "🧹 Clearing caches..."
-php artisan optimize:clear
-
-# Fallback for APP_KEY if it's still empty (prevent boot loop)
-if [ -z "$APP_KEY" ] && [ ! -f .env ]; then
-   echo "⚠️ No APP_KEY and no .env! Generating dummy key so Apache starts..."
-   echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
-fi
-
-# Force logs to stderr for Docker visibility
-if ! grep -q "LOG_CHANNEL=stderr" .env; then
-    echo "LOG_CHANNEL=stderr" >> .env
-fi
-
-# Clear any stale caches
+# Clear caches
 echo "🧹 Clearing caches..."
 php artisan optimize:clear || echo "⚠️ Failed to clear cache (check permissions?)"
 
-# Fix permissions (since we ran artisan as root, we must give back to www-data)
+# Fallback for APP_KEY if it's still empty (prevent boot loop)
+if [ -z "$APP_KEY" ] && [ ! -f .env ]; then
+   echo "⚠️ No APP_KEY and no .env! Generating dummy key so server starts..."
+   echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+fi
+
+# Force logs to stderr for container visibility
+if ! grep -q "LOG_CHANNEL=stderr" .env 2>/dev/null; then
+    echo "LOG_CHANNEL=stderr" >> .env
+fi
+
+# Fix permissions (storage must be writable)
 echo "🔒 Fixing permissions..."
-chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+chmod -R 755 storage bootstrap/cache 2>/dev/null || true
 
-# Configure Apache port if PORT env var is set
-if [ -n "${PORT:-}" ]; then
-    echo "🔌  Configuring Apache to listen on PORT=$PORT (and also 80 for compatibility)..."
+# Ensure storage symlink exists
+php artisan storage:link 2>/dev/null || true
 
-    # Railway (and other platforms) sometimes route traffic to the Dockerfile's exposed port (often 80)
-    # even while setting $PORT to a different value. Listening on both avoids 503 healthcheck failures.
-    if ! grep -qE '^[[:space:]]*Listen[[:space:]]+80[[:space:]]*$' /etc/apache2/ports.conf; then
-        echo "Listen 80" >> /etc/apache2/ports.conf
-    fi
+# Determine port (Railway sets PORT env var)
+PORT="${PORT:-8080}"
+echo "🔌 Starting PHP built-in server on port $PORT..."
 
-    if [ "$PORT" != "80" ]; then
-        if ! grep -qE "^[[:space:]]*Listen[[:space:]]+$PORT[[:space:]]*$" /etc/apache2/ports.conf; then
-            echo "Listen $PORT" >> /etc/apache2/ports.conf
-        fi
-
-        # Make the default vhost respond on both ports.
-        # Replace any existing <VirtualHost ...> line with one that includes 80 and $PORT.
-        sed -i -E "s#<VirtualHost[^>]*>#<VirtualHost *:80 *:$PORT>#g" /etc/apache2/sites-available/000-default.conf
-    fi
-else
-    echo "⚠️  PORT variable not set, defaulting to 80"
-fi
-
-echo "✅ Startup complete! Preparing web server..."
-
-# Ensure only one Apache MPM is enabled to avoid:
-#   AH00534: apache2: Configuration error: More than one MPM loaded.
-if command -v a2dismod >/dev/null 2>&1; then
-    echo "🔧 Ensuring a single Apache MPM (prefork) is enabled..."
-    # Disable alternative MPMs if present (ignore errors if they don't exist)
-    a2dismod mpm_event mpm_worker mpm_prefork 2>/dev/null || true
-    a2enmod mpm_prefork 2>/dev/null || true
-fi
-
-echo "🚀 Starting Apache (apache2-foreground)..."
-exec apache2-foreground
+# Start PHP's built-in server
+# Note: For production, you might want to use php-fpm + nginx or frankenphp
+exec php artisan serve --host=0.0.0.0 --port="$PORT"
