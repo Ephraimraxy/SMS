@@ -39,6 +39,20 @@ echo "✅ Environment variables synced"
 echo "📦 Running database migrations..."
 php artisan migrate --force 2>/dev/null || echo "⚠️ Migrations skipped (DB may not be ready)"
 
+# Check if database is seeded (check settings table)
+echo "🌱 Checking if database needs seeding..."
+SEED_CHECK=$(php artisan tinker --execute="echo \DB::table('settings')->count();" 2>/dev/null | grep -E "^[0-9]+$" || echo "0")
+
+if [ "$SEED_CHECK" -eq "0" ]; then
+    echo "🌱 Database appears empty. Running seeders..."
+    php artisan db:seed --force
+else
+    echo "✅ Database already seeded."
+fi
+
+# Revert APP_DEBUG to use environment variable
+[ -n "$APP_DEBUG" ] && sed -i "s|^APP_DEBUG=.*|APP_DEBUG=$APP_DEBUG|g" .env || true
+
 # Clear and rebuild cache
 echo "🧹 Clearing caches..."
 php artisan config:clear 2>/dev/null || true
