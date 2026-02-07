@@ -21,7 +21,6 @@ RUN install-php-extensions \
     bcmath \
     gd \
     zip \
-    intl \
     opcache
 
 # Install Node.js 20.x from NodeSource (apt nodejs is too old)
