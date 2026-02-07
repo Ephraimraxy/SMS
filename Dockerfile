@@ -1,17 +1,27 @@
 FROM php:8.3-apache
 
-# Install system dependencies (without nodejs - we'll install it separately)
+# Install system dependencies and PHP extensions using mlocati/php-extension-installer
+COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
+
+RUN install-php-extensions \
+    pdo_mysql \
+    mbstring \
+    exif \
+    pcntl \
+    bcmath \
+    gd \
+    zip \
+    intl \
+    opcache
+
+# Install other system dependencies
 RUN apt-get update && apt-get install -y \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
     unzip \
+    zip \
     ca-certificates \
     gnupg \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20.x from NodeSource (apt nodejs is too old)
