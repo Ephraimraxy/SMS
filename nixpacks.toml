@@ -4,7 +4,7 @@ nixPkgs = ["php83", "php83Packages.composer", "nodejs_20", "php83Extensions.pdo_
 [phases.install]
 cmds = [
   "composer install --no-dev --optimize-autoloader --no-interaction",
-  "npm ci --legacy-peer-deps",
+  "npm install --legacy-peer-deps",
   "npm run production"
 ]
 
