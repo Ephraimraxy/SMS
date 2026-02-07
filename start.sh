@@ -3,42 +3,43 @@ set -e
 
 echo "🚀 Starting Laravel School Management System..."
 
-# Copy .env if not exists
+# Copy .env if not exists - but we'll override values from environment
 if [ ! -f ".env" ]; then
     echo "⚠️ .env not found, copying from .env.example..."
-    cp .env.example .env 2>/dev/null || echo "No .env.example found"
+    cp .env.example .env 2>/dev/null || touch .env
 fi
 
-# CRITICAL: Generate APP_KEY if not set in environment or .env
-if [ -z "$APP_KEY" ]; then
-    echo "⚠️ APP_KEY not set in environment, generating one..."
-    # Generate key and extract it
-    php artisan key:generate --show > /tmp/appkey.txt 2>/dev/null || true
-    GENERATED_KEY=$(cat /tmp/appkey.txt 2>/dev/null | head -1)
-    
-    if [ -n "$GENERATED_KEY" ]; then
-        export APP_KEY="$GENERATED_KEY"
-        echo "APP_KEY=$GENERATED_KEY" >> .env
-        echo "✅ Generated APP_KEY: ${GENERATED_KEY:0:20}..."
-    else
-        # Fallback: generate with openssl
-        RANDOM_KEY=$(openssl rand -base64 32)
-        export APP_KEY="base64:$RANDOM_KEY"
-        echo "APP_KEY=base64:$RANDOM_KEY" >> .env
-        echo "✅ Generated fallback APP_KEY"
-    fi
-fi
+# CRITICAL: Write Railway environment variables to .env file
+# This ensures Laravel reads them correctly (env file takes precedence)
+echo "📝 Syncing environment variables to .env..."
 
-# Ensure .env has the APP_KEY (even if it was set via environment)
-if ! grep -q "^APP_KEY=" .env 2>/dev/null; then
+# App settings from Railway environment
+[ -n "$APP_KEY" ] && sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|g" .env || true
+[ -n "$APP_NAME" ] && sed -i "s|^APP_NAME=.*|APP_NAME=\"$APP_NAME\"|g" .env || true
+[ -n "$APP_ENV" ] && sed -i "s|^APP_ENV=.*|APP_ENV=$APP_ENV|g" .env || true
+[ -n "$APP_DEBUG" ] && sed -i "s|^APP_DEBUG=.*|APP_DEBUG=$APP_DEBUG|g" .env || true
+[ -n "$APP_URL" ] && sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|g" .env || true
+
+# Database settings from Railway environment  
+[ -n "$DB_CONNECTION" ] && sed -i "s|^DB_CONNECTION=.*|DB_CONNECTION=$DB_CONNECTION|g" .env || true
+[ -n "$DB_HOST" ] && sed -i "s|^DB_HOST=.*|DB_HOST=$DB_HOST|g" .env || true
+[ -n "$DB_PORT" ] && sed -i "s|^DB_PORT=.*|DB_PORT=$DB_PORT|g" .env || true
+[ -n "$DB_DATABASE" ] && sed -i "s|^DB_DATABASE=.*|DB_DATABASE=$DB_DATABASE|g" .env || true
+[ -n "$DB_USERNAME" ] && sed -i "s|^DB_USERNAME=.*|DB_USERNAME=$DB_USERNAME|g" .env || true
+[ -n "$DB_PASSWORD" ] && sed -i "s|^DB_PASSWORD=.*|DB_PASSWORD=$DB_PASSWORD|g" .env || true
+
+# Ensure APP_KEY line exists if not already in file
+if ! grep -q "^APP_KEY=" .env && [ -n "$APP_KEY" ]; then
     echo "APP_KEY=$APP_KEY" >> .env
 fi
 
-# Run database migrations (don't fail if DB isn't ready)
+echo "✅ Environment variables synced"
+
+# Run database migrations
 echo "📦 Running database migrations..."
 php artisan migrate --force 2>/dev/null || echo "⚠️ Migrations skipped (DB may not be ready)"
 
-# Clear and cache config
+# Clear and rebuild cache
 echo "🧹 Clearing caches..."
 php artisan config:clear 2>/dev/null || true
 php artisan cache:clear 2>/dev/null || true
@@ -51,14 +52,14 @@ chmod -R 755 storage bootstrap/cache 2>/dev/null || true
 # Create storage symlink (ignore if exists)
 php artisan storage:link 2>/dev/null || true
 
-# Force logs to stderr for Railway visibility
-if ! grep -q "^LOG_CHANNEL=" .env 2>/dev/null; then
+# Set log channel for Railway visibility
+if ! grep -q "^LOG_CHANNEL=" .env; then
     echo "LOG_CHANNEL=stderr" >> .env
 fi
 
-# Determine port (Railway sets PORT env var)
+# Get port from Railway (default 8080)
 PORT="${PORT:-8080}"
-echo "🔌 Starting PHP built-in server on port $PORT..."
+echo "🔌 Starting PHP server on port $PORT..."
 
-# Start PHP's built-in server
+# Start Laravel server
 exec php artisan serve --host=0.0.0.0 --port="$PORT"
