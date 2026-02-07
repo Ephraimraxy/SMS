@@ -3,6 +3,16 @@ FROM php:8.3-apache
 # Install system dependencies and PHP extensions using mlocati/php-extension-installer
 COPY --from=mlocati/php-extension-installer /usr/bin/install-php-extensions /usr/local/bin/
 
+# Install system dependencies first to ensure install-php-extensions can download binaries
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    unzip \
+    zip \
+    ca-certificates \
+    gnupg \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
 RUN install-php-extensions \
     pdo_mysql \
     mbstring \
@@ -13,16 +23,6 @@ RUN install-php-extensions \
     zip \
     intl \
     opcache
-
-# Install other system dependencies
-RUN apt-get update && apt-get install -y \
-    git \
-    curl \
-    unzip \
-    zip \
-    ca-certificates \
-    gnupg \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install Node.js 20.x from NodeSource (apt nodejs is too old)
 RUN mkdir -p /etc/apt/keyrings \
