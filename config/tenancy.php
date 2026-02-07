@@ -17,11 +17,15 @@ return [
      *
      * Only relevant if you're using the domain or subdomain identification middleware.
      */
-    'central_domains' => [
+    'central_domains' => array_merge([
         '127.0.0.1',
         'localhost',
         'healthcheck.railway.app', // Added for Railway health checks
-    ],
+    ], array_filter([
+        env('RAILWAY_STATIC_URL'),
+        env('RAILWAY_PUBLIC_DOMAIN'),
+        parse_url(env('APP_URL'), PHP_URL_HOST),
+    ])),
 
     /**
      * Tenancy bootstrappers are executed when tenancy is initialized.
