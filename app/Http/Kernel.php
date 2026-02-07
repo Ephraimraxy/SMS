@@ -15,7 +15,7 @@ class Kernel extends HttpKernel
      */
     protected $middleware = [
         // \App\Http\Middleware\TrustHosts::class,
-        // \App\Http\Middleware\TrustProxies::class, // FIXED: Causing 500 error (Fideloper proxy missing in L11)
+        \App\Http\Middleware\TrustProxies::class, // FIXED: Re-enabled with correct Illuminate base class
         \Illuminate\Http\Middleware\HandleCors::class, // FIXED: Replaced Fruitcake/Cors with native Laravel HandleCors
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,

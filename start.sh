@@ -17,7 +17,7 @@ echo "📝 Syncing environment variables to .env..."
 [ -n "$APP_KEY" ] && sed -i "s|^APP_KEY=.*|APP_KEY=$APP_KEY|g" .env || true
 [ -n "$APP_NAME" ] && sed -i "s|^APP_NAME=.*|APP_NAME=\"$APP_NAME\"|g" .env || true
 [ -n "$APP_ENV" ] && sed -i "s|^APP_ENV=.*|APP_ENV=$APP_ENV|g" .env || true
-[ -n "$APP_DEBUG" ] && sed -i "s|^APP_DEBUG=.*|APP_DEBUG=$APP_DEBUG|g" .env || true
+[ -n "$APP_DEBUG" ] && sed -i "s|^APP_DEBUG=.*|APP_DEBUG=true|g" .env || true
 [ -n "$APP_URL" ] && sed -i "s|^APP_URL=.*|APP_URL=$APP_URL|g" .env || true
 
 # Database settings from Railway environment  
